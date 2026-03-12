@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+optimizer_evolution.db
+*.log
+.venv/
