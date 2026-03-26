@@ -74,5 +74,11 @@ To scale this experimentation for large-scale language models (100M+ parameters)
 
 ---
 
+## 📜 Citations & Acknowledgments
+
+This research incorporates and builds upon the excellent work found in the [**muon-optimizer-guide**](https://github.com/vukrosic/muon-optimizer-guide.git) repository by **vukrosic**. The foundational Muon implementations, Newton-Schulz steps, and LLM training configurations provided in that guide were instrumental in developing the automated search and matrix operation benchmarks within this project.
+
+---
+
 ## 📄 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
