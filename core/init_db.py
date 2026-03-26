@@ -1,8 +1,8 @@
 import sqlite3
 from pathlib import Path
 
-from core.ast_canonicalize import canonical_json
-from core.hash_id import ast_hash
+from core.models.ast_canonicalize import canonical_json
+from core.models.hash_id import ast_hash
 
 DB_PATH = Path("optimizer_evolution.db")
 

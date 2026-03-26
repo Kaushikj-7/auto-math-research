@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "math-auto-research"
+version = "0.1.0"
+dependencies = [
+    "torch>=2.1.0",
+    "matplotlib",
+    "pandas",
+    "numpy",
+    "google-generativeai",
+    "psutil",
+    "tqdm",
+    "pydantic",
+    "requests",
+    "scipy",
+]
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["core/tests"]
+pythonpath = ["core"]

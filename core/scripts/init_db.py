@@ -1,9 +1,9 @@
 import sqlite3
 from pathlib import Path
 
-from models.ast_canonicalize import canonical_json
-from models.hash_id import ast_hash
-from configs.research_config import ResearchConfig
+from core.models.ast_canonicalize import canonical_json
+from core.models.hash_id import ast_hash
+from core.configs.research_config import ResearchConfig
 
 DB_PATH = ResearchConfig.DB_PATH
 

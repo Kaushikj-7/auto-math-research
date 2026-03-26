@@ -8,3 +8,5 @@ tqdm
 pydantic
 requests
 scipy
+pytest
+pytest-cov
