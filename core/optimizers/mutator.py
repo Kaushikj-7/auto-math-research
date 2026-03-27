@@ -8,11 +8,13 @@ from pathlib import Path
 from typing import Any
 import google.generativeai as genai
 
-from models.ast_canonicalize import canonical_json, canonicalize_ast
-from models.ast_validation import ASTValidationError, ensure_matrix_update, validate_ast
-from models.hash_id import ast_hash
-from models.symbolic_sanitizer import sanitize_ast
-from configs.research_config import ResearchConfig
+# Correct imports for root-level execution
+from core.models.ast_canonicalize import canonical_json, canonicalize_ast
+from core.models.ast_validation import ASTValidationError, ensure_matrix_update, validate_ast
+from core.models.hash_id import ast_hash
+from core.models.symbolic_sanitizer import sanitize_ast
+from core.configs.research_config import ResearchConfig
+from core.utils.compute_estimator import is_feasible, estimate_ast_flops
 
 DB_PATH = ResearchConfig.DB_PATH
 SLEEP_SECONDS = ResearchConfig.LLM_WORKER_SLEEP
@@ -40,7 +42,7 @@ def get_best_parent(conn: sqlite3.Connection) -> sqlite3.Row | None:
     conn.row_factory = sqlite3.Row
     return conn.execute(
         """
-        SELECT id, canonical_ast_json, generation
+        SELECT id, canonical_ast_json, generation, flops_threshold, baseline_id
         FROM optimizers
         WHERE status = 'done' AND objective_value IS NOT NULL
         ORDER BY objective_value DESC
@@ -112,7 +114,7 @@ def _random_mutation() -> Any:
 
 def insert_candidate(
     conn: sqlite3.Connection,
-    parent_id: int,
+    parent_id: int | None,
     generation: int,
     raw_ast: Any,
     latex_formula: str = "",
@@ -149,7 +151,7 @@ def insert_candidate(
 
 
 def run_mutator(db_path: Path = DB_PATH) -> None:
-    print(f"Starting Mutator on {db_path}")
+    print(f"🔄 Starting Recursive Mutator on {db_path}")
     while True:
         try:
             conn = sqlite3.connect(db_path)
@@ -157,25 +159,35 @@ def run_mutator(db_path: Path = DB_PATH) -> None:
 
             if parent:
                 parent_ast = json.loads(parent["canonical_ast_json"])
+                threshold = parent["flops_threshold"] or 1e11
+                baseline_id = parent["baseline_id"] or parent["id"] if parent["generation"] == 0 else parent["baseline_id"]
+
                 try:
                     candidate = mutate_via_llm(parent_ast)
-                    inserted = insert_candidate(
-                        conn,
-                        parent_id=parent["id"],
-                        generation=parent["generation"] + 1,
-                        raw_ast=candidate,
-                        latex_formula="auto-generated",
-                    )
-                    if inserted:
-                        print(f"Inserted candidate gen {parent['generation'] + 1}")
+                    
+                    if is_feasible(candidate, threshold):
+                        inserted = insert_candidate(
+                            conn,
+                            parent_id=parent["id"],
+                            generation=parent["generation"] + 1,
+                            raw_ast=candidate,
+                            latex_formula="auto-generated",
+                        )
+                        if inserted:
+                            conn.execute(
+                                "UPDATE optimizers SET flops_threshold = ?, baseline_id = ? WHERE id = (SELECT max(id) FROM optimizers)",
+                                (threshold, baseline_id)
+                            )
+                            conn.commit()
+                            print(f"✨ Inserted Gen {parent['generation'] + 1} (Baseline: {baseline_id})")
+                        else:
+                            print("Duplicate candidate skipped")
                     else:
-                        print("Duplicate candidate skipped")
+                        print(f"🚫 Proposed AST too complex ({estimate_ast_flops(candidate):.1e} flops). Discarding.")
                 except ASTValidationError as err:
                     print(f"Rejected mutation: {err}")
             else:
-                print("No parent found, creating seed...", end="\r")
-                # Seed logic if empty DB? Need a seed insertion function.
-                pass
+                print("No parent found, waiting for researcher to seed...", end="\r")
             conn.close()
         except Exception as e:
             print(f"Mutator error: {e}")

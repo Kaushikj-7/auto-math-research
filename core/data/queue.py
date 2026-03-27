@@ -5,7 +5,7 @@ from typing import Optional
 
 
 CLAIM_QUERY = """
-SELECT id, generation, raw_ast_json, canonical_ast_json
+SELECT id, generation, raw_ast_json, canonical_ast_json, flops_threshold, baseline_id
 FROM optimizers
 WHERE status = 'pending'
 ORDER BY created_at ASC
@@ -42,14 +42,15 @@ def mark_done(
     loss_sum: float,
     flops_estimate: float,
     steps_run: int,
+    artifact_path: str = None,
 ) -> None:
     conn.execute(
         """
         UPDATE optimizers
-        SET status = 'done', objective_value = ?, loss_sum = ?, flops_estimate = ?, steps_run = ?, completed_at = CURRENT_TIMESTAMP
+        SET status = 'done', objective_value = ?, loss_sum = ?, flops_estimate = ?, steps_run = ?, artifact_path = ?, completed_at = CURRENT_TIMESTAMP
         WHERE id = ?
         """,
-        (objective_value, loss_sum, flops_estimate, steps_run, row_id),
+        (objective_value, loss_sum, flops_estimate, steps_run, artifact_path, row_id),
     )
     conn.commit()
 

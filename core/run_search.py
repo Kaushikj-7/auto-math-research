@@ -2,14 +2,15 @@ import argparse
 import sys
 from pathlib import Path
 
-# Add project root to sys.path
-sys.path.append(str(Path(__file__).parent))
+# Add project root to sys.path to support 'core.' imports
+project_root = Path(__file__).parent.parent
+sys.path.append(str(project_root))
 
-from scripts.init_db import setup_db
-from scripts.status import main as status_main
-from optimizers.mutator import run_mutator
-from training.worker import run_worker
-from configs.research_config import ResearchConfig
+from core.scripts.init_db import setup_db
+from core.scripts.status import main as status_main
+from core.optimizers.mutator import run_mutator
+from core.training.worker import run_worker
+from core.configs.research_config import ResearchConfig
 
 
 def main():
