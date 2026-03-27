@@ -8,6 +8,25 @@ An automated research system for discovering novel mathematical optimizers using
 
 ---
 
+## 🔬 Research Infrastructure: Open Research Loop
+
+This repository now integrates the **Open Research Loop**, a docs-only control plane for autonomous AI research. It provides a file-based operating system for agents to conduct experiments, track state, and maintain reproducible research logs.
+
+### Non-Negotiable Rules
+- If the human gives a time budget like `2 hours`, the lab must write it down explicitly in durable repo state as seconds and as an absolute deadline before dispatching work.
+- Every time-boxed sprint must start with calibration or a documented calibration source.
+- The lab must track predicted versus actual runtime after every run and recalibrate when drift appears.
+- Experiment design must be reactive. Design one active set, run it, read the results, then design the next set.
+- Do not launch work that does not fit the remaining budget with explicit margin.
+
+### Research Methodology
+The goal is to build public infrastructure for autonomous AI research where:
+- Humans set direction, constraints, and taste.
+- Agents do the lower-level research work.
+- Experiments stay reproducible and results become public knowledge.
+
+---
+
 ## 🔬 Research Findings & Experimental Iterations
 
 This repository includes a specialized experimentation suite (`experiments/`) to evaluate the impact of different matrix operations on Transformer training.
@@ -31,6 +50,7 @@ This repository includes a specialized experimentation suite (`experiments/`) to
 - **`results/`**: Logs, metrics, and visualization curves from research iterations.
 - **`docs/`**: Detailed implementation reports and scaling guides.
 - **`configs/`**: Centralized configuration for LLM and training parameters.
+- **Research Loop Docs**: `AGENTS.md`, `LAB.md`, `OPERATING_MODEL.md`, `FOLDER_BLUEPRINT.md`, `SETUP.md`, `TEMPLATES.md`.
 
 ---
 
